@@ -1,13 +1,13 @@
-import { Container } from "../../Container"
-import { Footer } from "../../Footer"
-import { Logo } from "../../Logo"
-import { Menu } from "../../Menu"
+import { Container } from "../../Container";
+import { Footer } from "../../Footer";
+import { Logo } from "../../Logo";
+import { Menu } from "../../Menu";
 
 type MainLayoutProps = {
-  children: React.ReactNode
-}
+  children: React.ReactNode;
+};
 
-export default function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout({ children }: MainLayoutProps) {
   return (
     <>
       <Container>
@@ -24,5 +24,5 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Footer />
       </Container>
     </>
-  )
+  );
 }

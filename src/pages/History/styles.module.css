@@ -1,0 +1,46 @@
+.buttonContainer button {
+  min-width: auto;
+  margin: 0;
+  padding: 1rem;
+}
+
+.buttonContainer button svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.responsiveTable {
+  overflow-x: auto;
+  border-radius: 15px;
+}
+
+.responsiveTable table {
+  width: 100%;
+  font-size: 1.6rem;
+  min-width: 64rem;
+  border-collapse: collapse;
+}
+
+.responsiveTable th {
+  background-color: var(--gray-600);
+}
+
+.responsiveTable td {
+  background-color: var(--gray-800);
+}
+
+.responsiveTable th,
+.responsiveTable td {
+  padding: 1rem;
+  border-bottom: 0.2rem solid var(--gray-700);
+  text-align: left;
+}
+
+.thSort {
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+}
+
+.ThSort:hover {
+  filter: brightness(0.8)
+}

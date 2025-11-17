@@ -1,11 +1,12 @@
-import type { TaskStateModel } from '../../models/TaskStateModel';
-import { formatSecondsToMinutes } from '../../utils/formatSecondsToMinutes';
-import { getNextCycle } from '../../utils/getNextCycle';
-import { TaskActionTypes, type TaskActionModel } from './taskActions';
+import type { TaskStateModel } from "../../models/TaskStateModel";
+import { formatSecondsToMinutes } from "../../utils/formatSecondsToMinutes";
+import { getNextCycle } from "../../utils/getNextCycle";
+import { initialTaskState } from "./initialTaskState";
+import { TaskActionTypes, type TaskActionModel } from "./taskActions";
 
 export function taskReducer(
   state: TaskStateModel,
-  action: TaskActionModel,
+  action: TaskActionModel
 ): TaskStateModel {
   switch (action.type) {
     case TaskActionTypes.START_TASK: {
@@ -27,10 +28,10 @@ export function taskReducer(
         ...state,
         activeTask: null,
         secondsRemaining: 0,
-        formattedSecondsRemaining: '00:00',
-        tasks: state.tasks.map(task => {
+        formattedSecondsRemaining: "00:00",
+        tasks: state.tasks.map((task) => {
           if (state.activeTask && state.activeTask.id === task.id) {
-            return { ...task, interruptDate: Date.now() };
+            return { ...task, interruptedAt: Date.now() };
           }
           return task;
         }),
@@ -41,29 +42,32 @@ export function taskReducer(
         ...state,
         activeTask: null,
         secondsRemaining: 0,
-        formattedSecondsRemaining: '00:00',
-        tasks: state.tasks.map(task => {
+        formattedSecondsRemaining: "00:00",
+        tasks: state.tasks.map((task) => {
           if (state.activeTask && state.activeTask.id === task.id) {
-            return { ...task, completeDate: Date.now() };
+            return { ...task, completedAt: Date.now() };
           }
           return task;
         }),
       };
     }
     case TaskActionTypes.RESET_STATE: {
-      return state;
+      return { ...initialTaskState };
     }
     case TaskActionTypes.COUNT_DOWN: {
       return {
         ...state,
         secondsRemaining: action.payload.secondsRemaining,
         formattedSecondsRemaining: formatSecondsToMinutes(
-          action.payload.secondsRemaining,
+          action.payload.secondsRemaining
         ),
       };
     }
+
+    case TaskActionTypes.CHANGE_SETTINGS: {
+      return { ...state, config: { ...action.payload } };
+    }
   }
 
-  // Sempre deve retornar o estado
   return state;
 }

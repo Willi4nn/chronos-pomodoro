@@ -1,9 +1,13 @@
+import { useEffect } from "react";
 import { Container } from "../../components/Container";
 import { CountDown } from "../../components/CountDown";
-import MainLayout from "../../components/Layouts/MainLayout";
-import MainForm from "../../components/MainForm";
+import { MainLayout } from "../../components/Layouts/MainLayout";
+import { MainForm } from "../../components/MainForm";
 
-export default function Home() {
+export function Home() {
+  useEffect(() => {
+    document.title = "Chronos Pomodoro";
+  }, []);
 
   return (
     <MainLayout>
@@ -14,5 +18,5 @@ export default function Home() {
         <MainForm />
       </Container>
     </MainLayout>
-  )
+  );
 }

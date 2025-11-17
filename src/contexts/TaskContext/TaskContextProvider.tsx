@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef } from 'react';
+import type { TaskStateModel } from '../../models/TaskStateModel';
 import { loadBeep } from '../../utils/loadBeep';
 import { TimerWorkerManager } from '../../workers/TimerWorkerManager';
 import { initialTaskState } from './initialTaskState';
@@ -11,48 +12,66 @@ type TaskContextProviderProps = {
 };
 
 export function TaskContextProvider({ children }: TaskContextProviderProps) {
-  const [state, dispatch] = useReducer(taskReducer, initialTaskState);
+  const [state, dispatch] = useReducer(taskReducer, initialTaskState, () => {
+    const storagedState = localStorage.getItem('state')
+
+    if (storagedState === null) return initialTaskState;
+
+    const parsedStoragedState = JSON.parse(storagedState) as TaskStateModel;
+
+    return {
+      ...parsedStoragedState,
+      active: null,
+      secondsRemaining: 0,
+      formattedSecondsRemaining: '00:00',
+    }
+  });
   const playBeepRef = useRef<ReturnType<typeof loadBeep> | null>(null);
+  const workerStartedRef = useRef(false);
 
   const worker = TimerWorkerManager.getInstance();
 
-  worker.onmessage(e => {
-    const countDownSeconds = e.data;
+  useEffect(() => {
+    worker.onmessage(e => {
+      const countDownSeconds = e.data;
 
-    if (countDownSeconds <= 0) {
-      if (playBeepRef.current) {
-        playBeepRef.current();
-        playBeepRef.current = null;
+      if (countDownSeconds <= 0) {
+        if (playBeepRef.current) {
+          playBeepRef.current();
+          playBeepRef.current = null;
+        }
+
+        dispatch({
+          type: TaskActionTypes.COMPLETE_TASK,
+        });
+        worker.terminate();
+        workerStartedRef.current = false;
+      } else {
+        dispatch({
+          type: TaskActionTypes.COUNT_DOWN,
+          payload: { secondsRemaining: countDownSeconds },
+        });
       }
-
-      dispatch({
-        type: TaskActionTypes.COMPLETE_TASK,
-      });
-      worker.terminate();
-    } else {
-      dispatch({
-        type: TaskActionTypes.COUNT_DOWN,
-        payload: { secondsRemaining: countDownSeconds },
-      });
-    }
-  });
+    });
+  }, [worker]);
 
   useEffect(() => {
     if (state.activeTask) {
-      worker.postMessage(state);
-    } else {
-      worker.terminate();
+      document.title = `${state.formattedSecondsRemaining} - Chronos Pomodoro`;
     }
-  }, [worker, state.activeTask]);
+  }, [state.activeTask, state.formattedSecondsRemaining]);
 
   useEffect(() => {
-    if (state.activeTask && playBeepRef.current === null) {
-      console.log("Loading beep sound...");
-      playBeepRef.current = loadBeep();
-    } else {
-      playBeepRef.current = null;
+    localStorage.setItem('state', JSON.stringify(state));
+
+    if (state.activeTask && !workerStartedRef.current) {
+      worker.postMessage(state);
+      workerStartedRef.current = true;
+    } else if (!state.activeTask) {
+      worker.terminate();
+      workerStartedRef.current = false;
     }
-  }, [state.activeTask]);
+  }, [worker, state.activeTask, state]);
 
   return (
     <TaskContext.Provider value={{ state, dispatch }}>
